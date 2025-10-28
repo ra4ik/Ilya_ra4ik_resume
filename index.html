@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Илья - Главный редактор и крипто-трейдер</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(ellipse at center, #1a1a1a 0%, #000000 70%);
+            min-height: 100vh;
+            line-height: 1.6;
+            color: #ffffff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .crypto-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .crypto-symbol {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            opacity: 0.08;
+            animation: float 20s infinite linear;
+            color: #ff0000;
+        }
+
+        .crypto-symbol:nth-child(odd) { color: #ffffff; }
+        .crypto-symbol:nth-child(3n) { color: #ff3333; }
+
+        .crypto-symbol:nth-child(1) { left: 5%; font-size: 3rem; animation-delay: 0s; }
+        .crypto-symbol:nth-child(2) { left: 15%; font-size: 2rem; animation-delay: -3s; }
+        .crypto-symbol:nth-child(3) { left: 25%; font-size: 2.5rem; animation-delay: -6s; }
+        .crypto-symbol:nth-child(4) { left: 35%; font-size: 1.8rem; animation-delay: -9s; }
+        .crypto-symbol:nth-child(5) { left: 45%; font-size: 2.2rem; animation-delay: -12s; }
+        .crypto-symbol:nth-child(6) { left: 55%; font-size: 2.8rem; animation-delay: -15s; }
+        .crypto-symbol:nth-child(7) { left: 65%; font-size: 2rem; animation-delay: -18s; }
+        .crypto-symbol:nth-child(8) { left: 75%; font-size: 2.4rem; animation-delay: -21s; }
+        .crypto-symbol:nth-child(9) { left: 85%; font-size: 2.6rem; animation-delay: -24s; }
+        .crypto-symbol:nth-child(10) { left: 95%; font-size: 2rem; animation-delay: -27s; }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            5% { opacity: 0.08; }
+            95% { opacity: 0.08; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        .chart-candles {
+            position: absolute;
+            width: 4px;
+            background: linear-gradient(to top, #ff0000 0%, #ff3333 50%, #ffffff  100%);
+            animation: candleMove 15s infinite ease-in-out;
+            opacity: 0.1;
+        }
+
+        @keyframes candleMove {
+            0%, 100% { height: 20px; }
+            25% { height: 60px; }
+            50% { height: 35px; }
+            75% { height: 80px; }
+        }
+
+        .trading-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 0, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .price-lines {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 0, 0, 0.3), transparent);
+            animation: priceMove 12s infinite linear;
+        }
+
+        @keyframes priceMove {
+            0% { transform: translateX(-100%); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateX(100%); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+            color: white;
+            border-bottom: 2px solid #ff0000;
+            padding-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            letter-spacing: -2px;
+        }
+
+        .header .title {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+            color: #ff0000;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .header .mission {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+            color: #cccccc;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+            border-radius: 8px;
+            padding: 2.5rem;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid #333333;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 48px rgba(0, 0, 0, 0.9),
+                0 0 0 1px #ff0000,
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .card h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #ffffff;
+            border-bottom: 2px solid #ff0000;
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card h2 i {
+            color: #ff0000;
+        }
+
+        .experience-item {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #333333;
+            position: relative;
+        }
+
+        .experience-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(to bottom, #ff0000, transparent);
+        }
+
+        .experience-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .job-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+            margin-left: 1rem;
+        }
+
+        .company {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #ff0000;
+            margin-bottom: 0.3rem;
+            margin-left: 1rem;
+        }
+
+        .company a {
+            color: #ff0000;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .company a:hover {
+            color: #ff3333;
+            text-decoration: underline;
+        }
+
+        .duration {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #999999;
+            margin-bottom: 1rem;
+            font-style: italic;
+            margin-left: 1rem;
+        }
+
+        .description {
+            color: #cccccc;
+            line-height: 1.7;
+            margin-left: 1rem;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .skill-category {
+            background: #0d0d0d;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .skill-category:hover {
+            border-color: #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+        }
+
+        .skill-category h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #ff0000;
+            padding-bottom: 0.5rem;
+        }
+
+        .skill-category h3 i {
+            color: #ff0000;
+        }
+
+        .skill-list {
+            list-style: none;
+        }
+
+        .skill-list li {
+            background: #000000;
+            color: #ffffff;
+            padding: 0.4rem 0.8rem;
+            border: 1px solid #333333;
+            border-radius: 0;
+            margin-bottom: 0.3rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .skill-list li:hover {
+            background: #ff0000;
+            color: #000000;
+            border-color: #ff0000;
+            transform: translateX(5px);
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid #ff0000;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #ffffff;
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            padding: 1rem 2rem;
+            background: #000000;
+            border: 2px solid #ff0000;
+            border-radius: 0;
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover {
+            background: #ff0000;
+            color: #000000;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 0, 0, 0.4);
+        }
+
+        .education-item {
+            background: #000000;
+            color: #ffffff;
+            padding: 1.5rem;
+            border: 2px solid #ff0000;
+            border-radius: 0;
+            margin-bottom: 1rem;
+        }
+
+        .education-item h4 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ff0000;
+        }
+
+        .courses {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .course-item {
+            background: #0d0d0d;
+            color: #ffffff;
+            padding: 1rem;
+            border: 1px solid #333333;
+            border-radius: 0;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .course-item:hover {
+            background: #ff0000;
+            color: #000000;
+            border-color: #ff0000;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .contact-info {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .courses {
+                grid-template-columns: 1fr;
+            }
+
+            .crypto-symbol {
+                font-size: 1.5rem !important;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="crypto-bg">
+        <div class="crypto-symbol">BTC</div>
+        <div class="crypto-symbol">ETH</div>
+        <div class="crypto-symbol">₿</div>
+        <div class="crypto-symbol">Ξ</div>
+        <div class="crypto-symbol">ADA</div>
+        <div class="crypto-symbol">SOL</div>
+        <div class="crypto-symbol">DOT</div>
+        <div class="crypto-symbol">LINK</div>
+        <div class="crypto-symbol">₳</div>
+        <div class="crypto-symbol">AVAX</div>
+        
+        <div class="chart-candles" style="top: 10%; left: 10%; animation-delay: 0s;"></div>
+        <div class="chart-candles" style="top: 20%; left: 30%; animation-delay: -2s;"></div>
+        <div class="chart-candles" style="top: 30%; left: 50%; animation-delay: -4s;"></div>
+        <div class="chart-candles" style="top: 40%; left: 70%; animation-delay: -6s;"></div>
+        <div class="chart-candles" style="top: 50%; left: 20%; animation-delay: -8s;"></div>
+        <div class="chart-candles" style="top: 60%; left: 80%; animation-delay: -10s;"></div>
+        <div class="chart-candles" style="top: 70%; left: 40%; animation-delay: -12s;"></div>
+        <div class="chart-candles" style="top: 80%; left: 60%; animation-delay: -14s;"></div>
+        
+        <div class="price-lines" style="top: 15%; animation-delay: 0s;"></div>
+        <div class="price-lines" style="top: 35%; animation-delay: -3s;"></div>
+        <div class="price-lines" style="top: 55%; animation-delay: -6s;"></div>
+        <div class="price-lines" style="top: 75%; animation-delay: -9s;"></div>
+    </div>
+    
+    <div class="trading-grid"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1>ИЛЬЯ</h1>
+            <div class="title">CHIEF EDITOR • CRYPTO TRADER</div>
+            <p class="mission">
+                Создаю и руковожу направлениями, которые способствуют обучению и образованию. 
+                Стремлюсь предоставить доступную и качественную информацию, помогая крипто-комьюнити 
+                улучшить свои знания и навыки в различных областях.
+            </p>
+        </header>
+
+        <div class="main-content">
+            <div class="card">
+                <h2><i class="fas fa-briefcase"></i>ОПЫТ РАБОТЫ</h2>
+                
+                <div class="experience-item">
+                    <div class="job-title">CHIEF EDITOR & METHODOLOGIST</div>
+                    <div class="company"><a href="https://t.me/nutsfarm_cis" target="_blank">TMA Nuts Farm (CRYPTON)</a></div>
+                    <div class="duration">NOV 2024 — APR 2025</div>
+                    <div class="description">
+                        Разрабатывал обучающие программы и материалы, выстраивал логичную систему подачи знаний, 
+                        формирую контент-стратегию и обучаю команду. Курирую редакцию, слежу за качеством контента 
+                        и адаптирую его под уровень и интересы крипто-комьюнити.
+                    </div>
+                </div>
+
+                <div class="experience-item">
+                    <div class="job-title">CHIEF EDITOR</div>
+                    <div class="company"><a href="https://t.me/cryptowiki_channel" target="_blank">Crypto Wiki</a></div>
+                    <div class="duration">JAN 2024 — PRESENT</div>
+                    <div class="description">
+                        Создаю обучающий контент для крипто-комьюнити: от постов и статей до визуальных форматов и сторис. 
+                        Помогаю людям разобраться в крипте и фарме через понятный и вовлекающий формат.
+                    </div>
+                </div>
+
+                <div class="experience-item">
+                    <div class="job-title">CHIEF EDITOR</div>
+                    <div class="company">AGAVA CRYPTO</div>
+                    <div class="duration">MAR 2023 — OCT 2023</div>
+                    <div class="description">
+                        Создание полностью нового проекта в крипто-индустрии. Медиабаинговая команда с полностью 
+                        укомплектованной инфраструктурой и собственными техническими решениями. Написание курса 
+                        о криптовалютах для новичков из 8 уроков.
+                    </div>
+                </div>
+
+                <div class="experience-item">
+                    <div class="job-title">PROJECT MANAGER</div>
+                    <div class="company">THE VSЁ</div>
+                    <div class="duration">MAY 2022 — AUG 2023</div>
+                    <div class="description">
+                        Анализ работы проекта, постановка целей и план работы на несколько месяцев. 
+                        Привлек более 10,000 пользователей для проекта.
+                    </div>
+                </div>
+
+                <div class="experience-item">
+                    <div class="job-title">EXECUTIVE EDITOR</div>
+                    <div class="company"><a href="https://t.me/CRYPTUS_MEDIA" target="_blank">CRYPTUS</a></div>
+                    <div class="duration">AUG 2021 — JUL 2023</div>
+                    <div class="description">
+                        Создание контент-плана, написание постов и статей для крипто-комьюнити. 
+                        Создание креативов и внедрение криптовалют в массы.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-cogs"></i>НАВЫКИ И КОМПЕТЕНЦИИ</h2>
+                <div class="skills-grid">
+                    <div class="skill-category">
+                        <h3><i class="fas fa-chart-line"></i>АНАЛИТИКА</h3>
+                        <ul class="skill-list">
+                            <li>АНАЛИЗ ДАННЫХ</li>
+                            <li>ТРЕЙДИНГ</li>
+                            <li>СКАЛЬПИНГ</li>
+                            <li>БЛОКЧЕЙН-АНАЛИЗ</li>
+                            <li>ON-CHAIN METRICS</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3><i class="fas fa-users"></i>УПРАВЛЕНИЕ</h3>
+                        <ul class="skill-list">
+                            <li>PROJECT УПРАВЛЕНИЕ</li>
+                            <li>ОРГАНИЗАЦИЯ</li>
+                            <li>РЕШЕНИЕ ПРОБЛЕМ</li>
+                            <li>COMMUNITY УПРАВЛЕНИЕ</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3><i class="fas fa-palette"></i>КОНТЕНТ</h3>
+                        <ul class="skill-list">
+                            <li>СОЗДАНИЕ КРЕАТИВОВ</li>
+                            <li>КОММУНИКАЦИИ</li>
+                            <li>КОПИРАЙТИНГ</li>
+                            <li>КРИПТО-ЖУРНАЛИСТИКА</li>
+                            <li>SMM СТРАТЕГИИ</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3><i class="fas fa-bitcoin"></i>CRYPTO TECH</h3>
+                        <ul class="skill-list">
+                            <li>DEFI ПРОТОКОЛЫ</li>
+                            <li>NFT МАРКЕТИНГ</li>
+                            <li>WEB3 ТЕХНОЛОГИИ</li>
+                            <li>ТОКЕНОМИКА</li>
+                            <li>AIRDROP СТРАТЕГИИ</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3><i class="fas fa-graduation-cap"></i>ЭКСПЕРТИЗА</h3>
+                        <ul class="skill-list">
+                            <li>WHITEPAPER АНАЛИЗ</li>
+                            <li>LAYER 1/2 РЕШЕНИЯ</li>
+                            <li>GAMEFI ПРОЕКТЫ</li>
+                            <li>CROSS-CHAIN МОСТЫ</li>
+                            <li>DAO УПРАВЛЕНИЕ</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3><i class="fas fa-tools"></i>ИНСТРУМЕНТЫ</h3>
+                        <ul class="skill-list">
+                            <li>ТРЕЙДИНГVIEW</li>
+                            <li>ETHERSCAN</li>
+                            <li>DUNE АНАЛИТИКА</li>
+                            <li>DEBANK</li>
+                            <li>NANSEN</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-graduation-cap"></i>ОБРАЗОВАНИЕ И КУРСЫ</h2>
+                
+                <div class="education-item">
+                    <h4>САНКТ-ПЕТЕРБУРГСКИЙ ГОРНЫЙ УНИВЕРСИТЕТ</h4>
+                    <p>Инженер-механик</p>
+                </div>
+
+                <div class="courses">
+                    <div class="course-item">
+                        <strong>ПИКЧЕР EDUCATION</strong>
+                    </div>
+                    <div class="course-item">
+                        <strong>TEAMTRADERS</strong>
+                    </div>
+                    <div class="course-item">
+                        <strong>ОТ НОВИЧКА ДО КРИПТОБОГА</strong>
+                    </div>
+                    <div class="course-item">
+                        <strong>PYTHON</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="contact-info">
+            <a href="mailto:ra4ikcrypto@gmail.com" class="contact-item">
+                <i class="fas fa-envelope"></i>
+                ra4ikcrypto@gmail.com
+            </a>
+            <a href="https://t.me/ilyshara4ik" class="contact-item" target="_blank">
+                <i class="fab fa-telegram"></i>
+                @ilyshara4ik
+            </a>
+        </div>
+    </div>
+</body>
+</html>
